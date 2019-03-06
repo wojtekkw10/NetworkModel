@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CapacityGraphTest {
     @Test
-    void getShortestPath(){
+    void setStream(){
         CapacityGraph g = new CapacityGraph(4);
         g.setEdge(1,4,1);
         g.setEdge(1,2,1);
@@ -30,8 +30,8 @@ class CapacityGraphTest {
         path2.add(4);
 
 
-        assertEquals(path1, g.getShortestPath(1,4, 8));
-        assertEquals(path2, g.getShortestPath(1,4, 4));
-        assertNull(g.getShortestPath(1,4, 4));
+        assertEquals(path1, g.setStream(1,4, 8));
+        assertEquals(path2, g.setStream(1,4, 4));
+        assertNull(g.setStream(1,4, 4));
     }
 }

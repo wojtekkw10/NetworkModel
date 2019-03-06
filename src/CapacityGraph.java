@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 public class CapacityGraph extends Graph {
-    private ArrayList<ArrayList<Double>> capacity = new ArrayList<>();
-    private ArrayList<ArrayList<Double>> flow = new ArrayList<>();
+    public ArrayList<ArrayList<Double>> capacity = new ArrayList<>();
+    public ArrayList<ArrayList<Double>> flow = new ArrayList<>();
 
     public CapacityGraph(int numOfVertices){
 
@@ -84,7 +84,7 @@ public class CapacityGraph extends Graph {
         y--;
         ArrayList<Double> prevVertex = getDistancesFromVertex(x, true, newFlow);
         ArrayList<Double> path = new ArrayList<>();
-        //path.add((double)y);
+
         double current = y;
         for(int i=0; i<prevVertex.size(); i++){
             path.add(current+1);
@@ -105,12 +105,19 @@ public class CapacityGraph extends Graph {
             if(flow.get(k-1).get(l-1)+newFlow > capacity.get(k-1).get(l-1)) return null;
         }
 
-        for(int i=0; i<reversedPath.size()-1; i++){
-            int k = reversedPath.get(i);
-            int l = reversedPath.get(i+1);
-            flow.get(k-1).set(l-1, flow.get(k-1).get(l-1) + newFlow);
-        }
-
         return reversedPath;
+    }
+
+    ArrayList<Integer> setStream(int x, int y, double newFlow){
+        ArrayList<Integer> path = getShortestPath(x, y, newFlow);
+
+        if(path!=null){
+            for(int i=0; i<path.size()-1; i++){
+                int k = path.get(i);
+                int l = path.get(i+1);
+                flow.get(k-1).set(l-1, flow.get(k-1).get(l-1) + newFlow);
+            }
+        }
+        return path;
     }
 }
