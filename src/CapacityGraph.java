@@ -4,6 +4,9 @@ public class CapacityGraph extends Graph {
     public ArrayList<ArrayList<Double>> capacity = new ArrayList<>();
     public ArrayList<ArrayList<Double>> flow = new ArrayList<>();
 
+    ArrayList<ArrayList<ArrayList<Integer>>> paths = new ArrayList<>();
+    ArrayList<ArrayList<Integer>> numOfPacketsForStream = new ArrayList<>();
+
     public CapacityGraph(int numOfVertices){
 
         this.numOfVertices = numOfVertices;
@@ -80,6 +83,7 @@ public class CapacityGraph extends Graph {
         else return shortestDistance;
     }
 
+    //liczone od 1
     public ArrayList<Integer> getShortestPath(int x, int y, double newFlow){
         y--;
         ArrayList<Double> prevVertex = getDistancesFromVertex(x, true, newFlow);
@@ -108,7 +112,8 @@ public class CapacityGraph extends Graph {
         return reversedPath;
     }
 
-    ArrayList<Integer> setStream(int x, int y, double newFlow){
+    //liczone od 1
+    public ArrayList<Integer> setStream(int x, int y, double newFlow){
         ArrayList<Integer> path = getShortestPath(x, y, newFlow);
 
         if(path!=null){
@@ -119,5 +124,67 @@ public class CapacityGraph extends Graph {
             }
         }
         return path;
+    }
+
+    //liczone od 0
+    public void deleteStream(int x, int y){
+        ArrayList<Integer> path = paths.get(x).get(y);
+        int size = numOfPacketsForStream.get(x).get(y);
+        for(int i=0; i<path.size()-1; i++){
+            int a = path.get(i);
+            int b = path.get(i+1);
+            double currentFlow = flow.get(a).get(b);
+            if(edges.get(a).get(b)>0) flow.get(a).set(b, currentFlow-size);
+        }
+    }
+
+    ArrayList<ArrayList<Boolean>> getCrossingStreams(int x, int y){
+        ArrayList<ArrayList<Boolean>> foundPaths = new ArrayList<>();
+
+        //initialize
+        for(int i=0; i<numOfVertices; i++){
+            ArrayList<Boolean> row = new ArrayList<>();
+            for(int j=0; j<numOfVertices; j++){
+                row.add(false);
+            }
+            foundPaths.add(row);
+        }
+
+        for(int i=0; i<numOfVertices; i++){
+            for(int j=0; j<numOfVertices; j++){
+                for(int k=0; k<paths.get(i).get(j).size()-1; k++){
+                    ArrayList<Integer> path = paths.get(i).get(j);
+                    if(path.get(k).equals(path.get(k+1))){
+                        foundPaths.get(i).set(j, true);
+                        foundPaths.get(j).set(i, true);
+                        break;
+                    }
+                }
+            }
+        }
+        return foundPaths;
+    }
+
+    //liczone od 1
+    public boolean recalculateStreamsForDamagedEdge(int x, int y){
+        boolean succes = true;
+        ArrayList<ArrayList<Boolean>> streams = getCrossingStreams(x, y);
+
+        for(int i=0; i<numOfVertices; i++) {
+            for (int j = 0; j < numOfVertices; j++) {
+                if(streams.get(i).get(j) && i<j) deleteStream(i, j);
+            }
+        }
+
+        for(int i=0; i<numOfVertices; i++){
+            for(int j=0; j<numOfVertices; j++){
+                if(streams.get(i).get(i) && i<j) {
+                    if(setStream(i+1, j+1, numOfPacketsForStream.get(i).get(j))==null) succes = false;
+                }
+            }
+        }
+
+        return succes;
+
     }
 }
