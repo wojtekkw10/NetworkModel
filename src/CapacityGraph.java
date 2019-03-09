@@ -14,16 +14,28 @@ public class CapacityGraph extends Graph {
             ArrayList<Double> row = new ArrayList<>();
             ArrayList<Double> row1 = new ArrayList<>();
             ArrayList<Double> row2 = new ArrayList<>();
+            ArrayList<Integer> row3 = new ArrayList<>();
 
             for(int j=0;j<numOfVertices; j++){
 
                 row.add(0.0);
                 row1.add(0.0);
                 row2.add(0.0);
+                row3.add(0);
             }
             edges.add(row);
             capacity.add(row1);
             flow.add(row2);
+            numOfPacketsForStream.add(row3);
+        }
+
+        for(int i=0; i<numOfVertices; i++){
+            ArrayList<ArrayList<Integer>> pathArray = new ArrayList<>();
+            for(int j=0; j<numOfVertices; j++){
+                ArrayList<Integer> path = new ArrayList<>();
+                pathArray.add(path);
+            }
+            paths.add(pathArray);
         }
     }
 
@@ -122,6 +134,8 @@ public class CapacityGraph extends Graph {
                 int l = path.get(i+1);
                 flow.get(k-1).set(l-1, flow.get(k-1).get(l-1) + newFlow);
             }
+            paths.get(x-1).set(y-1, path);
+            numOfPacketsForStream.get(x-1).set(y-1, (int)newFlow);
         }
         return path;
     }

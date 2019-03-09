@@ -29,7 +29,7 @@ public class App {
         System.out.println("Zad 1.3: "+String.format( "%.5f", networkModel.getReliability(1, monteCarloSamples)));
 
         //-------------------------------------------------------
-        //Zad 1.4
+        //Zad 1.4 -----------------------------------------------
         networkModel.setEdgeDurability(1,3, 0.95);
         networkModel.setEdgeDurability(3,7, 0.95);
         networkModel.setEdgeDurability(4,9, 0.95);
@@ -41,7 +41,7 @@ public class App {
 
         //------------------------------------------------------
         //Zad 2.1 ----------------------------------------------
-        double durability = 0.999;
+        double durability = 0.9;
         double capacity = 1000;
         NetworkModel networkModel1 = new NetworkModel(10);
         networkModel1.verbose = true;
@@ -61,13 +61,21 @@ public class App {
         networkModel1.setEdge(5,7, durability, capacity);
         networkModel1.setEdge(5,9, durability, capacity);
 
-        if(!networkModel1.setStream(1,10, 990)) System.out.println("Error");
-        if(!networkModel1.setStream(2,6, 100)) System.out.println("Error");
-        if(!networkModel1.setStream(7,8, 10)) System.out.println("Error");
-        if(!networkModel1.setStream(3,4, 1)) System.out.println("Error");
-        if(!networkModel1.setStream(4,10, 6)) System.out.println("Error");
+        if(!networkModel1.setStream(1,10, 997)) System.out.println("Error1");
+        if(!networkModel1.setStream(2,6, 809)) System.out.println("Error2");
+        if(!networkModel1.setStream(7,8, 997)) System.out.println("Error3");
+        if(!networkModel1.setStream(3,4, 900)) System.out.println("Error4");
+        if(!networkModel1.setStream(4,10, 800)) System.out.println("Error5");
 
+        //-------------------------------------------------------
+        //Zad 2.2 -----------------------------------------------
         System.out.println("Zad 2.2: Average packet delay: "+String.format("%.8f", networkModel1.getAveragePacketDelay()));
+
+        //-------------------------------------------------------
+        //Zad 2.3 -----------------------------------------------
+        double T_max = 0.1;
+        System.out.println("Zad 2.3: Delay Reliability: "+String.format( "%.5f", networkModel1.getDelayReliability(T_max, 1, monteCarloSamples)));
+
 
     }
 }
