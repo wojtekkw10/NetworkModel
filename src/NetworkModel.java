@@ -1,13 +1,20 @@
 import javax.swing.plaf.synth.SynthTextAreaUI;
+import java.lang.reflect.Array;
+import java.security.SecureRandom;
+import java.security.Security;
 import java.util.ArrayList;
 
-public class NetworkModel {
-    private CapacityGraph network;
+public class NetworkModel{
+    public CapacityGraph network;
 
-    private double averagePacketSize;
+    private double averagePacketSizeSum = 0;
+    private double averagePacketSizeWeight = 0;
 
     private int numOfVertices;
     public boolean verbose = false;
+
+    //gdy true brany jest Sum
+    boolean constantAveragePacketSize = true;
 
     public NetworkModel(int numOfVertices){
         this.numOfVertices = numOfVertices;
@@ -32,17 +39,37 @@ public class NetworkModel {
 
     }
 
-    public boolean setStream(int i, int j, double flow){
-        ArrayList<Integer> path = network.setStream(i,j,flow);
+    //gdy average packet size constant ostatni argument nie jest brany pod uwage
+    public boolean setStream(int i, int j, double numOfPackets, int avgPacketSize){
+        ArrayList<Integer> path;
+        if(!constantAveragePacketSize) path = network.setStream(i,j,numOfPackets*avgPacketSize);
+        else path = network.setStream(i,j,numOfPackets*getAveragePacketSize());
+        if(path!=null) {
+            if(!constantAveragePacketSize){
+                averagePacketSizeSum+=avgPacketSize*numOfPackets;
+                averagePacketSizeWeight += numOfPackets;
+            }
+
+            return true;
+        }
+        else return false;
+
+    }
+    public boolean setStream(int i, int j, int numOfPackets){
+
+        ArrayList<Integer> path = network.setStream(i,j,numOfPackets*getAveragePacketSize());
         if(path!=null) {
             return true;
         }
         else return false;
 
     }
+    public void deleteStream(int i, int j){
 
-    void setAveragePacketSize(double avg){
-        averagePacketSize = avg;
+    }
+
+    public void setAveragePacketSize(double avg){
+        this.averagePacketSizeSum = avg;
     }
 
     boolean isConnected(Graph g){
@@ -60,9 +87,10 @@ public class NetworkModel {
 
         for(int n=0; n<marcoPoloSamples; n++) {
             Graph temp = new Graph(numOfVertices);
-            temp.edges = network.getAllEdges();
+            temp.edges = cloneArrayList(network.edges);
 
             if(verbose && (n%(marcoPoloSamples/10))==0) System.out.print(".");
+
             for (int k = 0; k < timesteps; k++) {
                 simulateTimestep(temp);
             }
@@ -74,15 +102,35 @@ public class NetworkModel {
         return reliabilityCount/(double)marcoPoloSamples;
     }
 
-    private void simulateTimestep(Graph g){
-        for (int i = 0; i < numOfVertices; i++) {
-            for (int j = 0; j < numOfVertices; j++) {
-                if (Math.random() > g.edges.get(i).get(j) && i<j) {
-                    g.edges.get(i).set(j, 0.0);
-                    g.edges.get(j).set(i, 0.0);
-                }
+    public int getEdgeCount(){
+        int counter = 0;
+        for(int i=0; i<numOfVertices; i++){
+            for(int j=0;j<numOfVertices; j++){
+                if(network.edges.get(i).get(j)>0 && i<j) counter++;
             }
         }
+        return counter;
+    }
+
+    private void simulateTimestep(Graph g){
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < numOfVertices; i++) {
+            for (int j = 0; j < numOfVertices; j++) {
+                if(g.edges.get(i).get(j)>0){
+                    if (random.nextDouble() > g.edges.get(i).get(j) && i<j) {
+                        //System.out.println("Usunieto: "+i+" "+j);
+                        g.edges.get(i).set(j, 0.0);
+                        g.edges.get(j).set(i, 0.0);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public double getAveragePacketSize(){
+        if(!constantAveragePacketSize) return averagePacketSizeSum/averagePacketSizeWeight;
+        else return averagePacketSizeSum;
     }
 
     public double getAveragePacketDelay(){
@@ -90,8 +138,9 @@ public class NetworkModel {
         for(int i=0; i<numOfVertices; i++){
             for(int j=0; j<numOfVertices; j++){
                 if(i<j && network.edges.get(i).get(j)>0){
-                    SUM_e+= network.flow.get(i).get(j)/
-                            (network.capacity.get(i).get(j)/averagePacketSize - network.flow.get(i).get(j));
+                    double flow = network.flow.get(i).get(j);
+                    double capacity = network.capacity.get(i).get(j);
+                    SUM_e+= flow / (capacity/getAveragePacketSize() - flow);
                 }
             }
         }
@@ -112,4 +161,29 @@ public class NetworkModel {
             }
         }
     }
+
+    public void compare(ArrayList<ArrayList<Double>> arr){
+        for(int i=0; i<numOfVertices; i++){
+            for(int j=0; j<numOfVertices;j++){
+                if(i<j){
+                    if(!network.edges.get(i).get(j).equals(arr.get(i).get(j))) System.out.println("i: "+i+", j: "+j);
+
+                }
+            }
+        }
+    }
+
+    ArrayList<ArrayList<Double>> cloneArrayList(ArrayList<ArrayList<Double>> a){
+        ArrayList<ArrayList<Double>> b = new ArrayList<>();
+        for(int i=0; i<a.size(); i++){
+            ArrayList<Double> row = new ArrayList<>();
+            for(int j=0; j<a.get(i).size(); j++){
+                row.add(a.get(i).get(j));
+            }
+            b.add(row);
+        }
+        return b;
+    }
+
+
 }

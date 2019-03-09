@@ -1,3 +1,5 @@
+import java.security.SecureRandom;
+
 public class App {
     public static void main(String[] args)
     {
@@ -6,7 +8,7 @@ public class App {
 
         //------------------------------------------------------
         //Zad 1.1 --------------------------------------
-        int monteCarloSamples = 1000;
+        int monteCarloSamples = 10000;
         NetworkModel networkModel = new NetworkModel(20);
         networkModel.verbose = true;
         for(int i=1; i<20; i++){
@@ -40,9 +42,11 @@ public class App {
         //------------------------------------------------------
         //Zad 2.1 ----------------------------------------------
         double durability = 0.999;
-        double capacity = 100;
+        double capacity = 1000;
         NetworkModel networkModel1 = new NetworkModel(10);
         networkModel1.verbose = true;
+        networkModel1.constantAveragePacketSize = true;
+        networkModel1.setAveragePacketSize(1);
         for(int i=1; i<10; i++){
             networkModel1.setEdge(i, i+1, durability, capacity);
         }
@@ -57,19 +61,13 @@ public class App {
         networkModel1.setEdge(5,7, durability, capacity);
         networkModel1.setEdge(5,9, durability, capacity);
 
-        networkModel1.setAveragePacketSize(10);
-
-        //TODO: capacity > flow * averagepacketSize w getDistances
-        if(!networkModel1.setStream(1,10, 9)) System.out.println("Error");
-        if(!networkModel1.setStream(2,6, 8)) System.out.println("Error");
-        if(!networkModel1.setStream(7,8, 7)) System.out.println("Error");
+        if(!networkModel1.setStream(1,10, 990)) System.out.println("Error");
+        if(!networkModel1.setStream(2,6, 100)) System.out.println("Error");
+        if(!networkModel1.setStream(7,8, 10)) System.out.println("Error");
         if(!networkModel1.setStream(3,4, 1)) System.out.println("Error");
-        if(!networkModel1.setStream(4,10, 7)) System.out.println("Error");
+        if(!networkModel1.setStream(4,10, 6)) System.out.println("Error");
 
-        System.out.println("Zad 2.2: Average packet delay: "+networkModel1.getAveragePacketDelay());
+        System.out.println("Zad 2.2: Average packet delay: "+String.format("%.8f", networkModel1.getAveragePacketDelay()));
 
     }
 }
-
-//TODO: refactor the NetworkModel class using CapacityGraph class
-//TODO: add setStream function to CapacityGraph class
